@@ -17,17 +17,15 @@ public class Worker extends Thread {
             final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             final PrintWriter out = new PrintWriter(client.getOutputStream());
 
-            out.print("HTTP/1.1 200 \r\n");
-            out.print("Content-Type: text/plain\r\n");
-            out.print("Connection: close\r\n");
-            out.print("\r\n");
-
+            String response = "You have sent this request:<hr><pre>";
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.isEmpty())
                     break;
-                out.print(line + "\r\n");
+                response += line;
             }
+
+            out.print(AnswerMakerUtil.make200(response));
 
             out.close();
             in.close();
