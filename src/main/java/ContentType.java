@@ -27,7 +27,7 @@ public final class ContentType {
     }
 
     public static ContentType TEXT = new ContentType("text/plain", true);
-    public static ContentType HTML = new ContentType("text/html", false, "html", "htm");
+    public static ContentType HTML = new ContentType("text/html", false, "html", "htm", "txt");
     public static ContentType CSS = new ContentType("text/css", false, "css");
     public static ContentType PNG = new ContentType("image/png", true, "png");
     public static ContentType JPEG = new ContentType("image/jpeg", true, "jpeg", "jpg");

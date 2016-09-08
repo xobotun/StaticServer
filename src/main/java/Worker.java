@@ -1,24 +1,27 @@
-import com.sun.xml.internal.bind.v2.TODO;
-
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
+import java.util.Map;
 
 public class Worker extends Thread {
     private final Socket client;
     private final String rootDir;
+    private final Map<String, List<byte[]>> cache;
 
     private static final int DEFAULT_FILE_SIZE = 1024; // chars
 
-    public Worker(Socket client, String rootDir) {
+    public Worker(Socket client, String rootDir, Map<String, List<byte[]>> cache) {
         this.client = client;
         this.rootDir = rootDir;
+        this.cache = cache;
     }
 
     @Override
     public void run() {
         try {
             final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            final PrintWriter out = new PrintWriter(client.getOutputStream());
+            final CachingOutputStream cacher = new CachingOutputStream(client.getOutputStream(), cache);
+            final PrintWriter out = new PrintWriter(cacher);
 
             final Request request;
             try {
@@ -26,19 +29,25 @@ public class Worker extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
                 out.print(AnswerMakerUtil.make403());
+                out.close();
+                in.close();
+                client.close();
                 return;
             }
 
+            final String filename = request.getPath();
+            if (!tryWritingFromCache(filename, cacher)) {
+                cacher.setFilename(filename);
 
-            if (!isFileInRootDir(request.getPath()))
-                out.print(AnswerMakerUtil.make403());
+                if (!isFileInRootDir(filename))
+                    out.print(AnswerMakerUtil.make403());
 
-            final File file = new File(rootDir + request.getPath());
-            if (file.exists() && file.isFile())
-                //out.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, readFileExtension(file), readTextFile(file)));
-                sendData(out, client.getOutputStream(), file);
-            else
-                out.print(AnswerMakerUtil.make404());
+                final File file = new File(rootDir + filename);
+                if (file.exists() && file.isFile())
+                    sendData(out, cacher, file);
+                else
+                    out.print(AnswerMakerUtil.make404());
+            }
 
             out.close();
             in.close(); // Closes all connections somewhy, should be in end
@@ -54,12 +63,25 @@ public class Worker extends Thread {
         }
     }
 
+    private boolean tryWritingFromCache(String filename, OutputStream client) throws IOException {
+        if (!cache.containsKey(filename))
+            return false;
+
+        System.out.println("File \"" + filename + "\" found cached!");
+        final List<byte[]> responses = cache.get(filename);
+        for (byte[] response : responses)
+            client.write(response);
+
+        return true;
+    }
+
     private void sendData(PrintWriter textOut, OutputStream binOut, File file) throws IOException {
         final ContentType type = readFileExtension(file);
         if (!type.isBinary())
             textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, readTextFile(file)));
         else {
             textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, (int)file.length() - 1));
+            //textOut.flush();
 
             final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
             final byte[] binData = new byte[(int)file.length()];
@@ -67,6 +89,7 @@ public class Worker extends Thread {
             binOut.write(binData);
             binOut.flush();
         }
+        textOut.flush();
     }
 
     private boolean isFileInRootDir(String filename) {
