@@ -30,7 +30,9 @@ public class Worker extends Thread {
             }
 
 
-            // TODO: if path is not correct 403
+            if (!isFileInRootDir(request.getPath()))
+                out.print(AnswerMakerUtil.make403());
+
             final File file = new File(rootDir + request.getPath());
             if (file.exists() && file.isFile())
                 //out.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, readFileExtension(file), readTextFile(file)));
@@ -65,6 +67,23 @@ public class Worker extends Thread {
             binOut.write(binData);
             binOut.flush();
         }
+    }
+
+    private boolean isFileInRootDir(String filename) {
+        int rootDirOffset = 0;
+
+        final int length = filename.length();
+        for (int i = 1; i < length; i++)
+            if (filename.charAt(i) == '/' || filename.charAt(i) == '\\') {
+                if (length > i+2 && filename.charAt(i+1) == '.' && filename.charAt(i+2) == '.')
+                    rootDirOffset--;
+                else
+                    rootDirOffset++;
+                if (rootDirOffset < 0)
+                    return false;
+            }
+
+        return true;
     }
 
     private String readTextFile(File file) throws FileNotFoundException, IOException {
