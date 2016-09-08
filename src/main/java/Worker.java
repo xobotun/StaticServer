@@ -6,9 +6,11 @@ import java.net.Socket;
 
 public class Worker extends Thread {
     private final Socket client;
+    private final String rootDir;
 
-    public Worker(Socket client) {
+    public Worker(Socket client, String rootDir) {
         this.client = client;
+        this.rootDir = rootDir;
     }
 
     @Override
@@ -17,15 +19,17 @@ public class Worker extends Thread {
             final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             final PrintWriter out = new PrintWriter(client.getOutputStream());
 
-            String response = "You have sent this request:<hr><pre>";
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.isEmpty())
-                    break;
-                response += line;
+            final Request request;
+            try {
+                request = new Request(in);
+            } catch (IOException e) {
+                e.printStackTrace();
+                out.print(AnswerMakerUtil.make403());
+                return;
             }
+            System.out.println(request.getPath());
 
-            out.print(AnswerMakerUtil.make200(response));
+            out.print(AnswerMakerUtil.make200(request.toString()));
 
             out.close();
             in.close();

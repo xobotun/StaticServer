@@ -16,10 +16,16 @@ public class AnswerMakerUtil {
         return builder.toString();
     }
 
-    public static String make404() {
-        return answerTemplate(ResponseCode.CODE_404, ContentType.TEXT, "");
-    }
     public static String make200(String content) {
         return answerTemplate(ResponseCode.CODE_200, ContentType.TEXT, content);
+    }
+    public static String make400() {
+        return answerTemplate(ResponseCode.CODE_400, ContentType.TEXT, "");
+    }
+    public static String make403() {
+        return answerTemplate(ResponseCode.CODE_403, ContentType.TEXT, "");
+    }
+    public static String make404() {
+        return answerTemplate(ResponseCode.CODE_404, ContentType.TEXT, "");
     }
 }

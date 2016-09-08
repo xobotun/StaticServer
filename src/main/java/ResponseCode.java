@@ -23,12 +23,14 @@ public final class ResponseCode {
 
 
     public static final ResponseCode CODE_200 = new ResponseCode(200, "OK");
+    public static final ResponseCode CODE_400 = new ResponseCode(400, "Bad Request");
+    public static final ResponseCode CODE_403 = new ResponseCode(403, "Forbidden");
     public static final ResponseCode CODE_404 = new ResponseCode(404, "Not Found");
 }
 
 //          "100"  ; Section 10.1.1: Continue
 //        | "101"  ; Section 10.1.2: Switching Protocols
-//        | "200"  ; Section 10.2.1: OK
+
 //        | "201"  ; Section 10.2.2: Created
 //        | "202"  ; Section 10.2.3: Accepted
 //        | "203"  ; Section 10.2.4: Non-Authoritative Information
@@ -42,11 +44,11 @@ public final class ResponseCode {
 //        | "304"  ; Section 10.3.5: Not Modified
 //        | "305"  ; Section 10.3.6: Use Proxy
 //        | "307"  ; Section 10.3.8: Temporary Redirect
-//        | "400"  ; Section 10.4.1: Bad Request
+
 //        | "401"  ; Section 10.4.2: Unauthorized
 //        | "402"  ; Section 10.4.3: Payment Required
-//        | "403"  ; Section 10.4.4: Forbidden
-//        | "404"  ; Section 10.4.5: Not Found
+
+
 //        | "405"  ; Section 10.4.6: Method Not Allowed
 //        | "406"  ; Section 10.4.7: Not Acceptable
 //        | "407"  ; Section 10.4.8: Proxy Authentication Required
