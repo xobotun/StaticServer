@@ -1,3 +1,5 @@
+import com.sun.xml.internal.bind.v2.TODO;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -31,7 +33,8 @@ public class Worker extends Thread {
             // TODO: if path is not correct 403
             final File file = new File(rootDir + request.getPath());
             if (file.exists() && file.isFile())
-                out.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, readFileExtension(file), readFile(file)));
+                //out.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, readFileExtension(file), readTextFile(file)));
+                sendData(out, client.getOutputStream(), file);
             else
                 out.print(AnswerMakerUtil.make404());
 
@@ -49,7 +52,22 @@ public class Worker extends Thread {
         }
     }
 
-    private String readFile(File file) throws FileNotFoundException, IOException {
+    private void sendData(PrintWriter textOut, OutputStream binOut, File file) throws IOException {
+        final ContentType type = readFileExtension(file);
+        if (!type.isBinary())
+            textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, readTextFile(file)));
+        else {
+            textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, (int)file.length() - 1));
+
+            final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+            final byte[] binData = new byte[(int)file.length()];
+            stream.read(binData);
+            binOut.write(binData);
+            binOut.flush();
+        }
+    }
+
+    private String readTextFile(File file) throws FileNotFoundException, IOException {
         BufferedReader fileStream = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         final StringBuilder result = new StringBuilder(DEFAULT_FILE_SIZE);
 

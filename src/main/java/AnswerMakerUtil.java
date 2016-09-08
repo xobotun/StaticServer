@@ -16,6 +16,19 @@ public class AnswerMakerUtil {
         return builder.toString();
     }
 
+    public static String answerTemplate(ResponseCode code, ContentType type, int contentSize) {
+        final StringBuilder builder = new StringBuilder(255);                   // Should be enough for headers.
+
+        builder.append("HTTP/1.1 ").append(code.toString()).append("\n\r");
+        builder.append("Date: ").append(new Date().toString()).append("\n\r");
+        builder.append("Server: Some self-written thing").append("\n\r");
+        builder.append("Content-Length: ").append(contentSize + 1).append("\n\r");
+        builder.append("Content-Type: ").append(type.toString()).append("\n\r");
+        builder.append("Connection: Closed").append("\n\r").append("\n\r");
+
+        return builder.toString();
+    }
+
     public static String make200(String content) {
         return answerTemplate(ResponseCode.CODE_200, ContentType.TEXT, content);
     }
