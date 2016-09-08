@@ -40,8 +40,8 @@ public class Request {
     }
 
     public static String readFilePath(String firstLine) {
-        final int firstSpace = firstLine.indexOf(' '); // GET <this one space> /adasd/asd%asd HTTP/1.1
-        final int secondSpace = firstLine.indexOf(' ', firstSpace + 1); // GET /adasd/asd%asd <this one space> HTTP/1.1
-        return firstLine.substring(firstSpace, secondSpace);
+        final int afterFirstSpace = firstLine.indexOf(' ') + 1; // GET <this one space> /adasd/asd%asd HTTP/1.1
+        final int secondSpace = firstLine.indexOf(' ', afterFirstSpace); // GET /adasd/asd%asd <this one space> HTTP/1.1
+        return firstLine.substring(afterFirstSpace, secondSpace);
     }
 }

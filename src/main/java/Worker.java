@@ -1,12 +1,11 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 public class Worker extends Thread {
     private final Socket client;
     private final String rootDir;
+
+    private static final int DEFAULT_FILE_SIZE = 1024; // chars
 
     public Worker(Socket client, String rootDir) {
         this.client = client;
@@ -27,12 +26,17 @@ public class Worker extends Thread {
                 out.print(AnswerMakerUtil.make403());
                 return;
             }
-            System.out.println(request.getPath());
 
-            out.print(AnswerMakerUtil.make200(request.toString()));
+
+            // TODO: if path is not correct 403
+            final File file = new File(rootDir + request.getPath());
+            if (file.exists() && file.isFile())
+                out.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, readFileExtension(file), readFile(file)));
+            else
+                out.print(AnswerMakerUtil.make404());
 
             out.close();
-            in.close();
+            in.close(); // Closes all connections somewhy, should be in end
             client.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -43,5 +47,30 @@ public class Worker extends Thread {
                 e2.printStackTrace();
             }
         }
+    }
+
+    private String readFile(File file) throws FileNotFoundException, IOException {
+        BufferedReader fileStream = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        final StringBuilder result = new StringBuilder(DEFAULT_FILE_SIZE);
+
+        for (String line = fileStream.readLine(); line != null; line = fileStream.readLine())
+            result.append(line).append("\r\n");
+
+        fileStream.close();
+        return result.toString();
+    }
+
+    private ContentType readFileExtension(File file) {
+        final int dotPosition = file.getName().lastIndexOf('.');
+        if (dotPosition == 0)
+            return ContentType.TEXT;
+        
+        final String extension = file.getName().substring(dotPosition + 1);
+
+        for (ContentType type : ContentType.types)
+            if (type.getAliases().contains(extension.toLowerCase()))
+                return type;
+
+        return ContentType.TEXT;
     }
 }

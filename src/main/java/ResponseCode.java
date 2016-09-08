@@ -10,7 +10,7 @@ public final class ResponseCode {
 
     @Override
     public String toString() {
-        return String.valueOf(code) + reason;
+        return String.valueOf(code) + ' ' + reason;
     }
 
 //    public String getReason() {
