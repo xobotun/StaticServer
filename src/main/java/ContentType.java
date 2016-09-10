@@ -33,6 +33,7 @@ public final class ContentType {
     public static ContentType JPEG = new ContentType("image/jpeg", true, "jpeg", "jpg");
     public static ContentType GIF = new ContentType("image/gif", true, "gif", "apng");
     public static ContentType JS = new ContentType("application/javascript", false, "js");
+    public static ContentType SWF = new ContentType("application/x-shockwave-flash", false, "swf");
 
-    public static ContentType[] types = {TEXT, HTML, CSS, JS, PNG, JPEG, GIF};
+    public static ContentType[] types = {TEXT, HTML, CSS, JS, PNG, JPEG, GIF, SWF};
 }

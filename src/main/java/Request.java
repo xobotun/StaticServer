@@ -48,7 +48,10 @@ public class Request {
 
     public static String readFilePath(String firstLine) {
         final int afterFirstSpace = firstLine.indexOf(' ') + 1; // GET <this one space> /adasd/asd%asd HTTP/1.1
-        final int secondSpace = firstLine.indexOf(' ', afterFirstSpace); // GET /adasd/asd%asd <this one space> HTTP/1.1
-        return firstLine.substring(afterFirstSpace, secondSpace);
+        final int secondSpace = firstLine.lastIndexOf(' '); // GET /adasd/asd asd <this one space> HTTP/1.1
+        final int firstQuota = firstLine.indexOf('?');
+        final int secondIndexToCut = (firstQuota == -1) ? secondSpace : (firstQuota < secondSpace) ? firstQuota : secondSpace;
+
+        return firstLine.substring(afterFirstSpace, secondIndexToCut);
     }
 }

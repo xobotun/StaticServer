@@ -57,8 +57,11 @@ public class Worker extends Thread {
                         out.print(AnswerMakerUtil.make403());
 
                     final File file = new File(rootDir + filename);
-                    if (file.exists() && file.isFile())
-                        sendData(out, cacher, file);
+                    if (file.exists())
+                        if (file.isFile())
+                            sendData(out, cacher, file);
+                        else if (file.isDirectory())
+                            out.print(AnswerMakerUtil.answerAsDirectory());
                     else
                         out.print(AnswerMakerUtil.make404());
                 }

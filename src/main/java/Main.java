@@ -3,7 +3,7 @@ public class Main {
     private static final int DEFAULT_NUM_THREADS = 1;
     private static final int DEFAULT_PORT = 80;
 
-    public static void main(String... args) throws Exception {
+    public static void main(String[] args) throws Exception {
         final Arguments arguments;
         try {
             arguments = readArguments(args);
@@ -48,11 +48,11 @@ public class Main {
         }
     }
 
-    private static Arguments readArguments(String... args) throws IllegalArgumentException {
+    private static Arguments readArguments(String[] args) throws IllegalArgumentException {
         final Arguments arguments = new Arguments();
         arguments.setPort(DEFAULT_PORT);
         arguments.setNumThreads(DEFAULT_NUM_THREADS);
-        
+
         try {
             if (args.length % 2 != 0 || args.length < 2)
                 throw new IllegalArgumentException("Too few parameters specified!");

@@ -6,7 +6,22 @@
 
     <groupId>StaticServer</groupId>
     <artifactId>StaticServer</artifactId>
-    <version>0.0.0</version>
+    <version>1.0.0</version>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

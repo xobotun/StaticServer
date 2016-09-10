@@ -8,7 +8,7 @@ public class AnswerMakerUtil {
         builder.append("HTTP/1.1 ").append(code.toString()).append("\n\r");
         builder.append("Date: ").append(new Date().toString()).append("\n\r");
         builder.append("Server: Some self-written thing").append("\n\r");
-        builder.append("Content-Length: ").append(content.length() + 1).append("\n\r");
+        builder.append("Content-Length: ").append(content.length() - 1).append("\n\r");
         builder.append("Content-Type: ").append(type.toString()).append("\n\r");
         builder.append("Connection: Closed").append("\n\r").append("\n\r");
         builder.append(content);
@@ -22,11 +22,15 @@ public class AnswerMakerUtil {
         builder.append("HTTP/1.1 ").append(code.toString()).append("\n\r");
         builder.append("Date: ").append(new Date().toString()).append("\n\r");
         builder.append("Server: Some self-written thing").append("\n\r");
-        builder.append("Content-Length: ").append(contentSize + 1).append("\n\r");
+        builder.append("Content-Length: ").append(contentSize - 1).append("\n\r");
         builder.append("Content-Type: ").append(type.toString()).append("\n\r");
         builder.append("Connection: Closed").append("\n\r").append("\n\r");
 
         return builder.toString();
+    }
+
+    public static String answerAsDirectory() {
+        return make200("<html>Directory index file</html>\\n");
     }
 
     public static String make200(String content) {
