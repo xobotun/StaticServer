@@ -8,7 +8,7 @@ public class Server {
     private final String rootDir;
     private final Map<String, List<byte[]>> cache = new ConcurrentHashMap<String, List<byte[]>>();
 
-    public Server(int port, String rootDir) throws Exception {
+    public Server(int port, String rootDir, int numThreads) throws Exception {
         this.rootDir = rootDir;
         try {
             socket = new ServerSocket(port);
