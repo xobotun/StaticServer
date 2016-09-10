@@ -2,71 +2,78 @@ import java.io.*;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class Worker extends Thread {
-    private final Socket client;
     private final String rootDir;
     private final Map<String, List<byte[]>> cache;
+    private final Queue<Socket> clientQueue;
 
     private static final int DEFAULT_FILE_SIZE = 1024; // chars
 
-    public Worker(Socket client, String rootDir, Map<String, List<byte[]>> cache) {
-        this.client = client;
+    public Worker(Queue<Socket> clientQueue, String rootDir, Map<String, List<byte[]>> cache) {
         this.rootDir = rootDir;
         this.cache = cache;
+        this.clientQueue = clientQueue;
     }
 
     @Override
     public void run() {
-        try {
-            final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            final CachingOutputStream cacher = new CachingOutputStream(client.getOutputStream(), cache);
-            final PrintWriter out = new PrintWriter(cacher);
+        while (true) {
+            Socket client = null;
+            while (client == null)
+                client = clientQueue.poll();
 
-            final Request request;
             try {
-                request = new Request(in);
+                final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                final CachingOutputStream cacher = new CachingOutputStream(client.getOutputStream(), cache);
+                final PrintWriter out = new PrintWriter(cacher);
+
+                final Request request;
+                try {
+                    request = new Request(in);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    out.print(AnswerMakerUtil.make403());
+                    out.close();
+                    in.close();
+                    client.close();
+                    return;
+                }
+
+                if (!request.getMethod().toLowerCase().equals("get")) {
+                    out.print(AnswerMakerUtil.make405());
+                    out.close();
+                    in.close();
+                    client.close();
+                    return;
+                }
+
+                final String filename = request.getPath();
+                if (!tryWritingFromCache(filename, cacher)) {
+                    cacher.setFilename(filename);
+
+                    if (!isFileInRootDir(filename))
+                        out.print(AnswerMakerUtil.make403());
+
+                    final File file = new File(rootDir + filename);
+                    if (file.exists() && file.isFile())
+                        sendData(out, cacher, file);
+                    else
+                        out.print(AnswerMakerUtil.make404());
+                }
+
+                out.close();
+                in.close(); // Closes all connections somewhy, should be in end
+                client.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                out.print(AnswerMakerUtil.make403());
-                out.close();
-                in.close();
-                client.close();
-                return;
-            }
-
-            if (!request.getMethod().toLowerCase().equals("get")){
-                out.print(AnswerMakerUtil.make405());
-                out.close();
-                in.close();
-                client.close();
-                return;
-            }
-
-            final String filename = request.getPath();
-            if (!tryWritingFromCache(filename, cacher)) {
-                cacher.setFilename(filename);
-
-                if (!isFileInRootDir(filename))
-                    out.print(AnswerMakerUtil.make403());
-
-                final File file = new File(rootDir + filename);
-                if (file.exists() && file.isFile())
-                    sendData(out, cacher, file);
-                else
-                    out.print(AnswerMakerUtil.make404());
-            }
-
-            out.close();
-            in.close(); // Closes all connections somewhy, should be in end
-            client.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Sum Ting Wong!");
-            try {
-                client.close();
-            } catch (Exception e2) {
-                e2.printStackTrace();
+                System.err.println("Sum Ting Wong!");
+                try {
+                    client.close();
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
             }
         }
     }
@@ -83,7 +90,7 @@ public class Worker extends Thread {
         return true;
     }
 
-    private void sendData(PrintWriter textOut, OutputStream binOut, File file) throws IOException {
+    private static void sendData(PrintWriter textOut, OutputStream binOut, File file) throws IOException {
         final ContentType type = readFileExtension(file);
         if (!type.isBinary())
             textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, readTextFile(file)));
@@ -100,7 +107,7 @@ public class Worker extends Thread {
         textOut.flush();
     }
 
-    private boolean isFileInRootDir(String filename) {
+    private static boolean isFileInRootDir(String filename) {
         int rootDirOffset = 0;
 
         final int length = filename.length();
@@ -117,7 +124,7 @@ public class Worker extends Thread {
         return true;
     }
 
-    private String readTextFile(File file) throws FileNotFoundException, IOException {
+    private static String readTextFile(File file) throws FileNotFoundException, IOException {
         BufferedReader fileStream = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         final StringBuilder result = new StringBuilder(DEFAULT_FILE_SIZE);
 
@@ -128,7 +135,7 @@ public class Worker extends Thread {
         return result.toString();
     }
 
-    private ContentType readFileExtension(File file) {
+    private static ContentType readFileExtension(File file) {
         final int dotPosition = file.getName().lastIndexOf('.');
         if (dotPosition == 0)
             return ContentType.TEXT;
