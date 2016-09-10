@@ -99,7 +99,7 @@ public class Worker extends Thread {
             textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, readTextFile(file)));
         else {
             textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, (int)file.length() - 1));
-            //textOut.flush();
+            textOut.flush();
 
             final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
             final byte[] binData = new byte[(int)file.length()];
