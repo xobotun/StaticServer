@@ -6,6 +6,7 @@ import java.util.List;
 public class Request {
     private List<String> rawRequest = new ArrayList<String>();
     private String path;
+    private String method;
 
     public Request(BufferedReader clientData) throws IOException {
 
@@ -13,8 +14,10 @@ public class Request {
             for (String line = clientData.readLine(); line != null && !line.isEmpty(); line = clientData.readLine())
                 rawRequest.add(line);
 
-            if (!rawRequest.isEmpty())
+            if (!rawRequest.isEmpty()) {
                 path = readFilePath(rawRequest.get(0));
+                method = rawRequest.get(0).substring(0, rawRequest.get(0).indexOf(' '));
+            }
             else throw new IOException("Request is empty!");
         } catch (IOException e) {
             throw new IOException("This request seems corrupted:\n" + toString(), e);
@@ -27,6 +30,10 @@ public class Request {
 
     public String getPath() {
         return path;
+    }
+
+    public String getMethod() {
+        return method;
     }
 
     @Override

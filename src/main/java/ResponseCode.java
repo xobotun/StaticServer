@@ -26,6 +26,7 @@ public final class ResponseCode {
     public static final ResponseCode CODE_400 = new ResponseCode(400, "Bad Request");
     public static final ResponseCode CODE_403 = new ResponseCode(403, "Forbidden");
     public static final ResponseCode CODE_404 = new ResponseCode(404, "Not Found");
+    public static final ResponseCode CODE_405 = new ResponseCode(405, "Method Not Allowed");
 }
 
 //          "100"  ; Section 10.1.1: Continue
@@ -49,7 +50,7 @@ public final class ResponseCode {
 //        | "402"  ; Section 10.4.3: Payment Required
 
 
-//        | "405"  ; Section 10.4.6: Method Not Allowed
+
 //        | "406"  ; Section 10.4.7: Not Acceptable
 //        | "407"  ; Section 10.4.8: Proxy Authentication Required
 //        | "408"  ; Section 10.4.9: Request Time-out

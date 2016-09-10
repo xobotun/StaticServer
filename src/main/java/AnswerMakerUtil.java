@@ -41,4 +41,7 @@ public class AnswerMakerUtil {
     public static String make404() {
         return answerTemplate(ResponseCode.CODE_404, ContentType.TEXT, "");
     }
+    public static String make405() {
+        return answerTemplate(ResponseCode.CODE_405, ContentType.TEXT, "");
+    }
 }

@@ -35,6 +35,14 @@ public class Worker extends Thread {
                 return;
             }
 
+            if (!request.getMethod().toLowerCase().equals("get")){
+                out.print(AnswerMakerUtil.make405());
+                out.close();
+                in.close();
+                client.close();
+                return;
+            }
+
             final String filename = request.getPath();
             if (!tryWritingFromCache(filename, cacher)) {
                 cacher.setFilename(filename);
