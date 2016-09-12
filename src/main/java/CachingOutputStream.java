@@ -29,7 +29,7 @@ public class CachingOutputStream extends OutputStream{
     public void write(byte[] b, int off, int len) throws IOException {
         if (filename != null)
             if(!cache.containsKey(filename)) {
-                System.out.println("Caching file \"" + filename + "\"...");
+//                System.out.println("Caching file \"" + filename + "\"...");
                 final List<byte[]> responses = new ArrayList<byte[]>();
                 cache.put(filename, responses);
                 responses.add(b.clone());
@@ -40,7 +40,7 @@ public class CachingOutputStream extends OutputStream{
             clientStream.write(b, off, len);
         } catch (SocketException e) {
             if (filename != null) {
-                System.out.println("Error while sending file \"" + filename + "\". Removing cache.");
+//                System.out.println("Error while sending file \"" + filename + "\". Removing cache.");
                 cache.remove(filename);
             }
         }

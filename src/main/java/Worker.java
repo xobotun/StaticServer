@@ -41,7 +41,7 @@ public class Worker extends Thread {
                     return;
                 }
 
-                if (!request.getMethod().toLowerCase().equals("get")) {
+                if (!request.getMethod().toLowerCase().equals("get") && !request.getMethod().toLowerCase().equals("head")) {
                     out.print(AnswerMakerUtil.make405());
                     out.close();
                     in.close();
@@ -50,18 +50,27 @@ public class Worker extends Thread {
                 }
 
                 final String filename = request.getPath();
-                if (!tryWritingFromCache(filename, cacher)) {
+                if (!tryWritingFromCache(request.getMethod() + ' ' + getName(), cacher)) {
                     cacher.setFilename(filename);
 
                     if (!isFileInRootDir(filename))
                         out.print(AnswerMakerUtil.make403());
 
-                    final File file = new File(rootDir + filename);
-                    if (file.exists())
-                        if (file.isFile())
-                            sendData(out, cacher, file);
-                        else if (file.isDirectory())
-                            out.print(AnswerMakerUtil.answerAsDirectory());
+                    File file = new File(rootDir + filename);
+                    if (file.exists() && file.isDirectory()) {
+                        file = new File(rootDir + filename + "/index.html");
+                        if (!file.exists()) {
+                            out.print(AnswerMakerUtil.make403());
+                            out.close();
+                            in.close();
+                            client.close();
+                            return;
+                        }
+                    }
+
+                    boolean isHead = request.getMethod().toLowerCase().equals("head");
+                    if (file.exists() && file.isFile())
+                            sendData(out, cacher, file, isHead);
                     else
                         out.print(AnswerMakerUtil.make404());
                 }
@@ -81,33 +90,31 @@ public class Worker extends Thread {
         }
     }
 
-    private boolean tryWritingFromCache(String filename, OutputStream client) throws IOException {
-        if (!cache.containsKey(filename))
+    private boolean tryWritingFromCache(String request, OutputStream client) throws IOException {
+        if (!cache.containsKey(request))
             return false;
 
-        System.out.println("File \"" + filename + "\" found cached!");
-        final List<byte[]> responses = cache.get(filename);
+//        System.out.println("File \"" + filename + "\" found cached!");
+        final List<byte[]> responses = cache.get(request);
         for (byte[] response : responses)
             client.write(response);
 
         return true;
     }
 
-    private static void sendData(PrintWriter textOut, OutputStream binOut, File file) throws IOException {
+    private static void sendData(PrintWriter textOut, OutputStream binOut, File file, boolean isHead) throws IOException {
         final ContentType type = readFileExtension(file);
-        if (!type.isBinary())
-            textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, readTextFile(file)));
-        else {
-            textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, (int)file.length() - 1));
-            textOut.flush();
 
+        textOut.print(AnswerMakerUtil.answerTemplate(ResponseCode.CODE_200, type, (int)file.length()));
+        textOut.flush();
+
+        if (!isHead) {
             final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
-            final byte[] binData = new byte[(int)file.length()];
+            final byte[] binData = new byte[(int) file.length()];
             stream.read(binData);
             binOut.write(binData);
             binOut.flush();
         }
-        textOut.flush();
     }
 
     private static boolean isFileInRootDir(String filename) {

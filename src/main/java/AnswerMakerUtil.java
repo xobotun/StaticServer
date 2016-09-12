@@ -22,15 +22,11 @@ public class AnswerMakerUtil {
         builder.append("HTTP/1.1 ").append(code.toString()).append("\r\n");
         builder.append("Date: ").append(new Date().toString()).append("\r\n");
         builder.append("Server: Some self-written thing").append("\r\n");
-        builder.append("Content-Length: ").append(contentSize + 1).append("\r\n");
+        builder.append("Content-Length: ").append(contentSize).append("\r\n");
         builder.append("Content-Type: ").append(type.toString()).append("\r\n");
         builder.append("Connection: Closed").append("\r\n").append("\r\n");
 
         return builder.toString();
-    }
-
-    public static String answerAsDirectory() {
-        return make200("<html>Directory index file</html>\\n");
     }
 
     public static String make200(String content) {
