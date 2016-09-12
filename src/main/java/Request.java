@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Request {
                 rawRequest.add(line);
 
             if (!rawRequest.isEmpty()) {
-                path = readFilePath(rawRequest.get(0));
+                path = URLDecoder.decode(readFilePath(rawRequest.get(0)), "UTF-8");
                 method = rawRequest.get(0).substring(0, rawRequest.get(0).indexOf(' '));
             }
             else throw new IOException("Request is empty!");
