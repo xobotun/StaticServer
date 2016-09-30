@@ -121,8 +121,8 @@ public class Worker extends Thread {
         int rootDirOffset = 0;
 
         final int length = filename.length();
-        for (int i = 1; i < length; i++)
-            if (filename.charAt(i) == '/' || filename.charAt(i) == '\\') {
+        for (int i = 1; i < length - 1; i++)
+            if (filename.charAt(i) == '/' && filename.charAt(i) != '/' /*|| filename.charAt(i) == '\\'*/) {
                 if (length > i+2 && filename.charAt(i+1) == '.' && filename.charAt(i+2) == '.')
                     rootDirOffset--;
                 else

@@ -10,7 +10,6 @@ public class Request {
     private String method;
 
     public Request(BufferedReader clientData) throws IOException {
-
         try {
             for (String line = clientData.readLine(); line != null && !line.isEmpty(); line = clientData.readLine())
                 rawRequest.add(line);
@@ -20,7 +19,7 @@ public class Request {
                 method = rawRequest.get(0).substring(0, rawRequest.get(0).indexOf(' '));
             }
             else throw new IOException("Request is empty!");
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IOException("This request seems corrupted:\n" + toString(), e);
         }
     }
