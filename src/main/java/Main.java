@@ -61,7 +61,7 @@ public class Main {
                 if (args[i].equals("-r"))
                     arguments.setRootDir(args[i + 1]);
                 else if (args[i].equals("-c"))
-                    arguments.setNumThreads(Integer.parseInt(args[i + 1]));
+                    arguments.setNumThreads(1);
                 else if (args[i].equals("-p"))
                     arguments.setPort(Integer.parseInt(args[i + 1]));
                 else throw new IllegalArgumentException("Unknown parameter \"" + args[i] + '\"');

@@ -26,59 +26,42 @@ public class Worker extends Thread {
 
             try {
                 final BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                final CachingOutputStream cacher = new CachingOutputStream(client.getOutputStream(), cache);
-                final PrintWriter out = new PrintWriter(cacher);
 
                 final Request request;
                 try {
                     request = new Request(in);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    out.print(AnswerMakerUtil.make403());
-                    out.close();
                     in.close();
                     client.close();
                     return;
                 }
 
-                if (!request.getMethod().toLowerCase().equals("get") && !request.getMethod().toLowerCase().equals("head")) {
-                    out.print(AnswerMakerUtil.make405());
-                    out.close();
-                    in.close();
-                    client.close();
-                    return;
-                }
+            final String filename = request.getPath();
 
-                final String filename = request.getPath();
-                if (!tryWritingFromCache(request.getMethod() + ' ' + getName(), cacher)) {
-                    cacher.setFilename(filename);
-
-                    if (!isFileInRootDir(filename))
-                        out.print(AnswerMakerUtil.make403());
-
-                    File file = new File(rootDir + filename);
-                    if (file.exists() && file.isDirectory()) {
-                        file = new File(rootDir + filename + "/index.html");
-                        if (!file.exists()) {
-                            out.print(AnswerMakerUtil.make403());
-                            out.close();
-                            in.close();
-                            client.close();
-                            return;
-                        }
+                if (isFileInRootDir(filename)) {
+                    int uid = 0;
+                    File file = new File(rootDir + filename + '/' + uid + ".txt");
+                    file.getParentFile().mkdirs();
+                    while (file.exists()) {
+//                        System.out.println("File " + rootDir + filename + uid + ".txt exists, trying next one.");
+                        final File testFile = new File(rootDir + filename + ++uid + ".txt");
+                        if (!testFile.exists())
+                            file = testFile;
                     }
 
-                    boolean isHead = request.getMethod().toLowerCase().equals("head");
-                    if (file.exists() && file.isFile())
-                            sendData(out, cacher, file, isHead);
-                    else
-                        out.print(AnswerMakerUtil.make404());
+                    System.out.println("Writing into " + file.getAbsolutePath());
+                    final PrintWriter writer = new PrintWriter(new FileOutputStream(file));
+                    for (String line : request.getRawRequest())
+                        writer.write(line + "\n");
+
+                    writer.close();
                 }
 
-                out.close();
+                client.getOutputStream().close();
                 in.close(); // Closes all connections somewhy, should be in end
                 client.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Sum Ting Wong!");
                 try {
