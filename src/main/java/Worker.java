@@ -53,8 +53,13 @@ public class Worker extends Thread {
                 if (!tryWritingFromCache(request.getMethod() + ' ' + getName(), cacher)) {
                     cacher.setFilename(filename);
 
-                    if (!isFileInRootDir(filename))
+                    if (!isFileInRootDir(filename)) {
                         out.print(AnswerMakerUtil.make403());
+                        out.close();
+                        in.close();
+                        client.close();
+                        return;
+                    }
 
                     File file = new File(rootDir + filename);
                     if (file.exists() && file.isDirectory()) {
@@ -122,8 +127,8 @@ public class Worker extends Thread {
 
         final int length = filename.length();
         for (int i = 1; i < length - 1; i++)
-            if (filename.charAt(i) == '/' && filename.charAt(i) != '/' /*|| filename.charAt(i) == '\\'*/) {
-                if (length > i+2 && filename.charAt(i+1) == '.' && filename.charAt(i+2) == '.')
+            if (filename.charAt(i) == '/' && filename.charAt(i + 1) != '/' /*|| filename.charAt(i) == '\\'*/) {
+                if (length > i+2 && filename.charAt(i + 1) == '.' && filename.charAt(i + 2) == '.')
                     rootDirOffset--;
                 else
                     rootDirOffset++;
